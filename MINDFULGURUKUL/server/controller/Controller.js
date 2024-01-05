@@ -76,10 +76,32 @@ exports.login = async (req, res) => {
 exports.fetchProps = async (req, res) => {
   const id = req.params.id;
   try {
-    const props = User.find({ _id: id });
+    const props = await User.find({ _id: id });
     res.status(200).send(props);
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: true });
+  }
+};
+
+exports.addUser = async (req, res) => {
+  const id = req.params.id;
+  const { name, email, phone } = req.body;
+
+  try {
+    const newuser = {
+      name,
+      email,
+      phone,
+    };
+    await User.findOneAndUpdate(
+      { _id: id },
+      { $push: { propsUsers: newuser } },
+      { new: true }
+    );
+    res.send({ ok: true });
+  } catch (error) {
+    console.log(eror);
+    res.send({ ok: false });
   }
 };

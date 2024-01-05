@@ -77,7 +77,7 @@ exports.fetchProps = async (req, res) => {
   const id = req.params.id;
   try {
     const user = await User.find({ _id: id });
-    res.status(200).send(user.propsUsers);
+    res.status(200).send(user);
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: true });

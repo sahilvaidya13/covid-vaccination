@@ -83,6 +83,31 @@ exports.fetchProps = async (req, res) => {
     res.status(400).send({ error: true });
   }
 };
+exports.findNested = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findOne({
+      "propsUsers._id": id,
+    });
+    if (!user) {
+      return res.status(404).json({ message: "Nested object not found" });
+    }
+
+    // Access details within the nested object
+    const nestedObject = await user.propsUsers.find(
+      (item) => item._id.toString() === id
+    );
+    if (!nestedObject) {
+      return res
+        .status(404)
+        .json({ message: "Object not found in propsUsers" });
+    }
+    res.send(nestedObject);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: true });
+  }
+};
 
 exports.addUser = async (req, res) => {
   const id = req.params.id;

@@ -6,6 +6,7 @@ const {
   login,
   fetchProps,
   addUser,
+  findNested,
 } = require("../controller/Controller");
 
 // router.post("/in", signin);
@@ -15,5 +16,6 @@ router.post("/signup", register);
 router.post("/login", login);
 router.get("/fetchProps/:id", fetchProps);
 router.post("/addUser/:id", addUser);
+router.get("/findNested/:id", findNested);
 
 module.exports = router;

@@ -138,7 +138,6 @@ exports.editProps = async (req, res) => {
 
   // Data to update the object
   console.log("fired");
-  console.log(objectNew);
 
   try {
     console.log("et try");

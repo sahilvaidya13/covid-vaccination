@@ -133,6 +133,7 @@ exports.addUser = async (req, res) => {
 exports.editProps = async (req, res) => {
   const pid = req.params.pid;
   const uid = req.params.uid;
+  const { name, phone, email } = req.body;
   console.log(uid, pid);
   console.log(req.body);
 

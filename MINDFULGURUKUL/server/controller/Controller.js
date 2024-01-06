@@ -74,9 +74,14 @@ exports.login = async (req, res) => {
 };
 
 exports.fetchProps = async (req, res) => {
-  const id = req.params.id;
+  const { id, filter } = req.params;
+
   try {
-    const user = await User.find({ _id: id });
+    if (filter === "atoz") {
+      const user = await User.find({ _id: id }).sort({ "propsUsers.name": 1 });
+    } else {
+      const user = await User.find({ _id: id }).sort({ "propsUsers.name": -1 });
+    }
     res.status(200).send(user);
   } catch (error) {
     console.log(error);

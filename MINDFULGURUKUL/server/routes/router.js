@@ -15,7 +15,7 @@ const {
 
 router.post("/signup", register);
 router.post("/login", login);
-router.get("/fetchProps/:id", fetchProps);
+router.get("/fetchProps/:id/:filter", fetchProps);
 router.post("/addUser/:id", addUser);
 router.get("/findNested/:id", findNested);
 router.post("/editProps/:uid/:pid", editProps);

@@ -136,11 +136,6 @@ exports.editProps = async (req, res) => {
   console.log(uid, pid);
   const { name, email, phone } = req.body;
 
-  const objectNew = {
-    name: name,
-    email: email,
-    phone: phone,
-  };
   // Data to update the object
   console.log("fired");
   console.log(objectNew);
@@ -155,7 +150,7 @@ exports.editProps = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Find the index of the object within the nested array by its ID
+    // Find the index of the object within the nested by its ID
     const objectIndex = user.propsUsers.findIndex(
       (obj) => obj._id.toString() === pid
     );
@@ -167,10 +162,15 @@ exports.editProps = async (req, res) => {
     }
 
     // Update the specific object within the nested array
-    user.propsUsers[objectIndex] = {
-      ...user.propsUsers[objectIndex],
-      ...objectNew,
-    };
+    if (name) {
+      user.propsUsers[objectIndex].name = name;
+    }
+    if (email) {
+      user.propsUsers[objectIndex].email = email;
+    }
+    if (phone) {
+      user.propsUsers[objectIndex].phone = phone;
+    }
 
     await user.save(); // Save the updated User object
 

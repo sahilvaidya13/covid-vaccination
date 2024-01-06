@@ -79,10 +79,11 @@ exports.fetchProps = async (req, res) => {
   try {
     if (filter === "atoz") {
       const user = await User.find({ _id: id }).sort({ "propsUsers.name": 1 });
+      res.status(200).send(user);
     } else {
       const user = await User.find({ _id: id }).sort({ "propsUsers.name": -1 });
+      res.status(200).send(user);
     }
-    res.status(200).send(user);
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: true });

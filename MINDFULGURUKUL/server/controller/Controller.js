@@ -132,50 +132,74 @@ exports.addUser = async (req, res) => {
 };
 exports.editProps = async (req, res) => {
   const pid = req.params.pid;
-  const uid = req.params.uid;
-  console.log(uid, pid);
-  const { name, email, phone } = req.body;
+  const _id = req.params.uid;
+  console.log(_id, pid);
 
+  const { name, email, phone } = req.body;
+  console.log(name, email, phone);
   // Data to update the object
   console.log("fired");
 
   try {
     console.log("et try");
-    const user = await User.findOne({
-      _id: uid,
-    });
-    console.log("et try2");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // const user = await User.findOne({
+    //   _id: uid,
+    // });
+    // console.log("et try2");
+    // if (!user) {
+    //   return res.status(404).json({ message: "User not found" });
+    // }
 
     // Find the index of the object within the nested by its ID
-    const objectIndex = user.propsUsers.findIndex(
-      (obj) => obj._id.toString() === pid
-    );
-    console.log("et try3");
-    if (objectIndex === -1) {
-      return res
-        .status(404)
-        .json({ message: "Object not found in propsUsers" });
-    }
+    // const objectIndex = user.propsUsers.findIndex(
+    //   (obj) => obj._id.toString() === pid
+    // );
+    // console.log("et try3");
+    // if (objectIndex === -1) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "Object not found in propsUsers" });
+    // }
 
     // Update the specific object within the nested array
+    // if (name) {
+    //   user.propsUsers[objectIndex].name = name;
+    // }
+    // if (email) {
+    //   user.propsUsers[objectIndex].email = email;
+    // }
+    // if (phone) {
+    //   user.propsUsers[objectIndex].phone = phone;
+    // }
+    const updatedProps = {};
     if (name) {
-      user.propsUsers[objectIndex].name = name;
+      updatedProps.name = name;
     }
     if (email) {
-      user.propsUsers[objectIndex].email = email;
+      updatedProps.email = email;
     }
     if (phone) {
-      user.propsUsers[objectIndex].phone = phone;
+      updatedProps.phone = phone;
     }
 
-    await user.save(); // Save the updated User object
+    const user = await User.findByIdAndUpdate(
+      _id,
+      {
+        $set: {
+          "propsUsers.$[obj].$": updatedProps, // Use positional operator for update
+        },
+      },
+      {
+        arrayFilters: [{ "obj._id": pid }], // Filter for specific object
+        new: true, // Return the updated document
+      }
+    );
+
+    // Save the updated User object
 
     res.status(200).json({
       message: "Object updated successfully",
-      updatedObject: user.propsUsers[objectIndex],
+      updatedObject: user,
     });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });

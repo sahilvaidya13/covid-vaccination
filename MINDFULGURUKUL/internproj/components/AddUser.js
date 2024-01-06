@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useRef, useEffect } from "react";
 
 import {
   Text,
@@ -6,14 +6,66 @@ import {
   TextInput,
   StyleSheet,
   ScrollView,
-  Button,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeArea } from "react-native-safe-area-context";
-const AddUser = () => {
+import { AlertDialog, Button, Center, NativeBaseProvider } from "native-base";
+const AddUser = ({ navigation }) => {
+  const [ID, setID] = useState("");
   const insets = useSafeArea();
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
+  const [isOpen, setIsOpen] = useState(false);
 
-  const [username, setUsername] = useState("user.username");
+  const onClose = () => {
+    setIsOpen(false);
+    navigation.navigate("dashboard");
+  };
+  useEffect(() => {
+    AsyncStorage.getItem("id")
+      .then((value) => setID(value))
+      .catch((error) => console.error("Error retrieving value:", error));
+
+    console.log(`iddddnewnew: ${ID}`);
+  }, [ID]);
+  const cancelRef = useRef(null);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const handleChangeText = (fieldName, text) => {
+    setFormData({
+      ...formData,
+      [fieldName]: text,
+    });
+  };
+  const Adder = async () => {
+    const rep = fetch(
+      `https://usermanager-w8ex.onrender.com/api/addUser/${ID}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.ok) {
+          console.log("added");
+          setIsOpen(true);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   return (
     <View
       style={{ width: "90%", alignSelf: "center", paddingTop: insets.top + 40 }}
@@ -22,34 +74,53 @@ const AddUser = () => {
       <Text style={styles.head}>Name</Text>
       <TextInput
         style={styles.input}
-        value={username}
+        value={formData.name}
         keyboardType="defualt"
-        onChangeText={setUsername}
+        onChangeText={(text) => handleChangeText("name", text)}
         placeholder="name"
       />
       <Text style={styles.head}>Email</Text>
       <TextInput
         style={styles.input}
-        value={username}
-        onChangeText={setUsername}
+        value={formData.email}
+        onChangeText={(text) => handleChangeText("email", text)}
         placeholder="email"
         keyboardType="email-address"
       />
       <Text style={styles.head}>Phone</Text>
       <TextInput
         style={styles.input}
-        value={username}
-        onChangeText={setUsername}
+        value={formData.phone}
+        onChangeText={(text) => handleChangeText("phone", text)}
         placeholder="phone number"
         keyboardType="numeric"
       />
 
-      <TouchableOpacity
-        style={styles.buttonSave}
-        onPress={() => setIsEditing(false)}
-      >
+      <TouchableOpacity style={styles.buttonSave} onPress={Adder}>
         <Text style={styles.buttonTextSave}>Save</Text>
       </TouchableOpacity>
+      <NativeBaseProvider>
+        <Center flex={1} px="3">
+          <AlertDialog
+            leastDestructiveRef={cancelRef}
+            isOpen={isOpen}
+            onClose={onClose}
+          >
+            <AlertDialog.Content>
+              <AlertDialog.CloseButton />
+              <AlertDialog.Header>Success</AlertDialog.Header>
+              <AlertDialog.Body>
+                {`User: ${formData.name} added successfully.`}
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button colorScheme="success" onPress={onClose}>
+                  Done
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Content>
+          </AlertDialog>
+        </Center>
+      </NativeBaseProvider>
     </View>
   );
 };

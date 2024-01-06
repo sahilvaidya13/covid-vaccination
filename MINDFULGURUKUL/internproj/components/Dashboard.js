@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -6,18 +6,63 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Button,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LOGO from "./add.svg";
 import DropDownPicker from "react-native-dropdown-picker";
+
 const Dashboard = ({ navigation }) => {
+  const [ID, setID] = useState("");
+
+  useEffect(() => {
+    AsyncStorage.getItem("id")
+      .then((value) => setID(value))
+      .catch((error) => console.error("Error retrieving value:", error));
+
+    console.log(`idddddd: ${ID}`);
+
+    fetcher();
+  }, [ID, props]);
   const [search, setSearch] = useState("");
   DropDownPicker.setListMode("FLATLIST");
   const [open1, setOpen1] = useState(false);
-  const [value1, setValue1] = useState(null);
+  const [props, setProps] = useState([]);
+  const [value1, setValue1] = useState("atoz");
   const [sort, setSort] = useState([
     { label: "A-Z", value: "atoz" },
     { label: "Z-A", value: "ztoa" },
   ]);
+  const fetcher = async () => {
+    const rep = fetch(
+      `https://usermanager-w8ex.onrender.com/api/fetchProps/${ID}/${value1}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data[0].propsUsers);
+        if (value1 === "atoz") {
+          const sortedData = data[0].propsUsers.sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+          setProps(sortedData);
+        } else {
+          const sortedData = data[0].propsUsers.sort((a, b) =>
+            b.name.localeCompare(a.name)
+          );
+          setProps(sortedData);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   return (
     <ScrollView>
       <View
@@ -51,9 +96,10 @@ const Dashboard = ({ navigation }) => {
           alignItems: "center",
           marginTop: 10,
           marginBottom: 20,
+          gap: 8,
         }}
       >
-        <Text style={{ fontSize: 13 }}>Filter: </Text>
+        <Text style={{ fontSize: 13 }}>Filter:</Text>
         <View style={{ width: "40%" }}>
           <DropDownPicker
             open={open1}
@@ -68,42 +114,24 @@ const Dashboard = ({ navigation }) => {
             disableBorderRadius={true}
           />
         </View>
+        <Button onPress={fetcher} title="Done" />
       </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Sahil Vaidya</Text>
-        <Text style={styles.detail}>sahil.vaidya13@gmail.com</Text>
-        <Text style={styles.detail}>+91 9926703403</Text>
-      </View>
+
+      {props
+        ? props.map((cardItem, index) => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("usersingle", { val: cardItem._id })
+              }
+            >
+              <View key={index} style={styles.card}>
+                <Text style={styles.title}>{cardItem.name}</Text>
+                <Text style={styles.detail}>{cardItem.email}</Text>
+                <Text style={styles.detail}>{cardItem.phone}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        : ""}
     </ScrollView>
   );
 };

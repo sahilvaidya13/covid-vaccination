@@ -42,6 +42,11 @@ function App() {
           component={AddUser}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="usersingle"
+          component={User}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

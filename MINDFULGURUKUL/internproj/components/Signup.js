@@ -54,7 +54,7 @@ const Signup = ({ navigation }) => {
       city: value1,
       state: value2,
     });
-    const rep = fetch("http://192.168.0.101/api/signup", {
+    const rep = fetch("https://usermanager-w8ex.onrender.com/api/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +73,7 @@ const Signup = ({ navigation }) => {
   return (
     <KeyboardAwareScrollView
       style={{
-        paddingTop: insets.top,
+        paddingTop: insets.top - 40,
         flex: 1,
         backgroundColor: "#EFEFEF",
       }}

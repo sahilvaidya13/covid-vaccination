@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -8,14 +8,80 @@ import {
   Button,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useSafeArea } from "react-native-safe-area-context";
-const User = () => {
+const User = ({ route, navigation }) => {
+  const [ID, setID] = useState("");
+  const [loading, setLoading] = useState(true);
   const insets = useSafeArea();
-  const [isEditing, setIsEditing] = useState(1);
-  const [username, setUsername] = useState("user.username");
+  const { val } = route.params;
+  const [isEditing, setIsEditing] = useState(0);
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [dataMain, setData] = useState({});
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
 
+  const handleChangeText = (fieldName, text) => {
+    setFormData({
+      ...formData,
+      [fieldName]: text,
+    });
+  };
+  const fetcher = async () => {
+    const rep = fetch(
+      `https://usermanager-w8ex.onrender.com/api/findNested/${val}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const Edit = async () => {
+    const rep = fetch(
+      `https://usermanager-w8ex.onrender.com/api/editProps/${ID}/${val}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigation.navigate("dashboard");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  useEffect(() => {
+    AsyncStorage.getItem("id")
+      .then((value) => setID(value))
+      .catch((error) => console.error("Error retrieving value:", error));
+
+    console.log(`idddddd: ${ID}`);
+
+    fetcher();
+  }, [ID]);
   return (
     <View style={{ paddingTop: insets.top + 20 }}>
       <Text style={{ alignSelf: "center", fontSize: 20, fontWeight: "bold" }}>
@@ -29,46 +95,68 @@ const User = () => {
               <Text>Name</Text>
               <TextInput
                 style={styles.input}
-                value={username}
+                value={formData.name}
                 keyboardType="defualt"
-                onChangeText={setUsername}
+                onChangeText={(text) => {
+                  handleChangeText("name", text);
+                  console.log(formData);
+                }}
                 placeholder="Username"
               />
               <Text>Email</Text>
               <TextInput
                 style={styles.input}
-                value={username}
-                onChangeText={setUsername}
+                value={formData.email}
+                onChangeText={(text) => {
+                  handleChangeText("email", text);
+                  console.log(formData);
+                }}
                 placeholder="Username"
                 keyboardType="email-address"
               />
               <Text>Phone</Text>
               <TextInput
                 style={styles.input}
-                value={username}
-                onChangeText={setUsername}
+                value={formData.phone}
+                onChangeText={(text) => {
+                  handleChangeText("phone", text);
+                  console.log(formData);
+                }}
                 placeholder="Username"
                 keyboardType="numeric"
               />
 
-              <TouchableOpacity
-                style={styles.buttonSave}
-                onPress={() => setIsEditing(false)}
-              >
+              <TouchableOpacity style={styles.buttonSave} onPress={Edit}>
                 <Text style={styles.buttonTextSave}>Save</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View>
               <Text style={styles.title}>User Information</Text>
-              <Text style={styles.detail}>Username: Sahil Vaidya</Text>
-              <Text style={styles.detail}>Email: sahil.vaidya13@gmail.com</Text>
-              <Text style={styles.detail}>Phone Number: +91 9926703403</Text>
+              {dataMain ? (
+                <View>
+                  <Text
+                    style={styles.detail}
+                  >{`Username:${dataMain.name}`}</Text>
+                  <Text style={styles.detail}>{`Email:${dataMain.email}`}</Text>
+                  <Text style={styles.detail}>{`Phone:${dataMain.phone}`}</Text>
+                </View>
+              ) : (
+                " "
+              )}
 
               {/* ... other details with styles */}
               <TouchableOpacity
                 style={styles.buttonEdit}
-                onPress={() => setIsEditing(true)}
+                onPress={() => {
+                  setIsEditing(true);
+                  setFormData({
+                    name: dataMain.name,
+                    email: dataMain.email,
+                    phone: dataMain.phone,
+                  });
+                  console.log("Inside EDIT", formData);
+                }}
               >
                 <Text style={styles.buttonTextSave}>Edit</Text>
               </TouchableOpacity>

@@ -1,4 +1,5 @@
 import { React, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   StyleSheet,
   SafeAreaView,
@@ -11,8 +12,46 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
+  const [id, setID] = useState("");
   const [password, setPassword] = useState("");
-
+  const [dataMain, setData] = useState({});
+  const [formData, setFormData] = useState({});
+  const storeData = async (value) => {
+    try {
+      await AsyncStorage.setItem("id", value);
+    } catch (e) {}
+  };
+  const LoginAPI = async () => {
+    setFormData({
+      email: email,
+      pass: password,
+    });
+    const rep = fetch("https://usermanager-w8ex.onrender.com/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        AsyncStorage.setItem("id", data.userid)
+          .then(() => console.log(`Value stored : ${data.userid}`))
+          .catch((error) => console.error("Error storing value:", error));
+        setData(data);
+      })
+      .then(() => {
+        if (dataMain.success) {
+          AsyncStorage.getItem("id")
+            .then((value) => console.log("Value retrieved:", value))
+            .catch((error) => console.error("Error retrieving value:", error));
+          navigation.navigate("dashboard");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
   return (
     <View style={styles.container}>
       <View style={{ alignSelf: "center", marginTop: "40%" }}>
@@ -33,7 +72,7 @@ const Login = ({ navigation }) => {
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => setEmail(text)}
           />
 
           <TextInput
@@ -41,11 +80,15 @@ const Login = ({ navigation }) => {
             placeholder="Password"
             secureTextEntry={true}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => setPassword(text)}
           />
         </KeyboardAwareScrollView>
       </View>
-      <TouchableOpacity style={styles.button} activeOpacity={0.7}>
+      <TouchableOpacity
+        onPress={LoginAPI}
+        style={styles.button}
+        activeOpacity={0.7}
+      >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
       <View

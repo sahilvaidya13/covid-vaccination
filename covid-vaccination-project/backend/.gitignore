@@ -1,0 +1,24 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+venv*/
+env/
+.venv/
+
+# Ignore pipenv virtual environment
+Pipfile.lock
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
